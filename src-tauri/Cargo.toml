@@ -23,6 +23,8 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.10", features = ["v4"] }
 dirs = "5.0"
 once_cell = "1.20"
+printpdf = "0.7"
+rust_xlsxwriter = "0.83"
 
 [profile.release]
 panic = "abort"

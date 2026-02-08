@@ -1,7 +1,6 @@
 import { Component } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
 import { 
-  LayoutDashboard, 
   Wallet, 
   History, 
   BarChart3, 
@@ -17,8 +16,7 @@ interface NavItem {
 }
 
 const mainNavItems: NavItem[] = [
-  { path: '/dashboard', label: 'Inicio', icon: LayoutDashboard },
-  { path: '/caja', label: 'Caja', icon: Wallet },
+  { path: '/dashboard', label: 'Caja', icon: Wallet },
   { path: '/historial', label: 'Historial', icon: History },
   { path: '/reportes', label: 'Reportes', icon: BarChart3 },
 ];

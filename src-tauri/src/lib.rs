@@ -33,6 +33,8 @@ pub fn run() {
             commands::get_categories_by_type,
             commands::get_today_transactions_summary,
             commands::search_transactions,
+            // Report commands
+            commands::generate_report,
             // Test command
             commands::greet,
         ])

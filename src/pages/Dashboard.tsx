@@ -12,6 +12,7 @@ import {
   refreshSessionData 
 } from '@/stores/sessionStore';
 import { transactionApi, type Transaction } from '@/lib/api';
+import { formatCurrency } from '@/stores/configStore';
 
 const Dashboard: Component = () => {
   const navigate = useNavigate();
@@ -113,13 +114,6 @@ const Dashboard: Component = () => {
     } catch (err) {
       setCloseError('Error al cerrar la sesión');
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
-    }).format(amount);
   };
 
   const formatDate = (dateString: string) => {

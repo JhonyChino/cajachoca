@@ -1,6 +1,8 @@
 import { Component, createSignal, Show, For } from 'solid-js';
 import { AppLayout } from '@/components/layout';
 import { Button } from '@/components/ui';
+import { reportApi } from '@/lib/api';
+import { config } from '@/stores/configStore';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -108,13 +110,26 @@ const Reportes: Component = () => {
 
     setIsGenerating(true);
     
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    alert(`Reporte ${selectedReport()} generado en formato ${reportFormat().toUpperCase()}`);
-    
-    setIsGenerating(false);
-    setShowModal(false);
+    try {
+      const response = await reportApi.generateReport(
+        selectedReport()!,
+        startDate(),
+        endDate(),
+        reportFormat(),
+        config().downloadPath || undefined
+      );
+      
+      if (response.success && response.file_path) {
+        alert(`Reporte generado exitosamente!\n\nArchivo guardado en:\n${response.file_path}`);
+        setShowModal(false);
+      } else {
+        alert(`Error al generar reporte: ${response.error || 'Error desconocido'}`);
+      }
+    } catch (err) {
+      alert(`Error al generar reporte: ${err}`);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const getReportTitle = () => {

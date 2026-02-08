@@ -155,3 +155,22 @@ export const categoryApi = {
     return invoke('get_categories_by_type', { categoryType: type });
   }
 };
+
+// Reports API
+export const reportApi = {
+  async generateReport(
+    reportType: string,
+    startDate: string,
+    endDate: string,
+    format: 'pdf' | 'excel',
+    downloadPath?: string
+  ): Promise<{ success: boolean; file_path: string | null; error: string | null }> {
+    return invoke('generate_report', {
+      reportType,
+      startDate,
+      endDate,
+      format,
+      downloadPath
+    });
+  }
+};

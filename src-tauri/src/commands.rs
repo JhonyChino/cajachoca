@@ -1,5 +1,6 @@
 use crate::db::Database;
 use crate::models::*;
+use crate::services::report_service::ReportService;
 use crate::services::session_service::SessionService;
 use crate::services::transaction_service::TransactionService;
 use tauri::State;
@@ -304,6 +305,46 @@ pub fn search_transactions(
             total_count: 0,
             error: Some(format!("Error al buscar transacciones: {}", e)),
         }),
+    }
+}
+
+// ============================================
+// Report Commands
+// ============================================
+
+#[tauri::command]
+pub fn generate_report(
+    report_type: String,
+    start_date: String,
+    end_date: String,
+    format: String,
+    download_path: Option<String>,
+    db: State<Database>,
+) -> Result<serde_json::Value, String> {
+    match ReportService::generate_report(
+        &db,
+        &report_type,
+        &start_date,
+        &end_date,
+        &format,
+        download_path.as_deref(),
+    ) {
+        Ok(file_path) => {
+            let response = serde_json::json!({
+                "success": true,
+                "file_path": file_path.to_string_lossy().to_string(),
+                "error": null
+            });
+            Ok(response)
+        }
+        Err(e) => {
+            let response = serde_json::json!({
+                "success": false,
+                "file_path": null,
+                "error": e
+            });
+            Ok(response)
+        }
     }
 }
 
