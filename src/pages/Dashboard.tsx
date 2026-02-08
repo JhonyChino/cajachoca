@@ -3,11 +3,13 @@ import { useNavigate } from '@solidjs/router';
 import { Plus, Upload, Lock, TrendingUp, TrendingDown } from 'lucide-solid';
 import { AppLayout } from '@/components/layout';
 import { Button } from '@/components/ui';
+import TransactionModal from '@/components/modals/TransactionModal';
 import { 
   activeSession, 
   sessionSummary, 
   isLoading, 
-  loadActiveSession
+  loadActiveSession,
+  refreshSessionData 
 } from '@/stores/sessionStore';
 import { transactionApi, type Transaction } from '@/lib/api';
 
@@ -15,6 +17,8 @@ const Dashboard: Component = () => {
   const navigate = useNavigate();
   const [recentTransactions, setRecentTransactions] = createSignal<Transaction[]>([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = createSignal(false);
+  const [showIncomeModal, setShowIncomeModal] = createSignal(false);
+  const [showExpenseModal, setShowExpenseModal] = createSignal(false);
   const [showCloseModal, setShowCloseModal] = createSignal(false);
   const [closingAmount, setClosingAmount] = createSignal('');
   const [closeError, setCloseError] = createSignal<string | null>(null);
@@ -46,6 +50,71 @@ const Dashboard: Component = () => {
     }
   };
 
+  const handleCreateTransaction = async (type: 'income' | 'expense', data: {
+    amount: number;
+    concept: string;
+    categoryId: number | null;
+  }) => {
+    const session = activeSession();
+    if (!session) return;
+
+    try {
+      const response = await transactionApi.createTransaction(
+        session.id,
+        type,
+        data.amount,
+        data.concept,
+        data.categoryId,
+        session.operator_name
+      );
+
+      if (response.success) {
+        // Close modal
+        if (type === 'income') {
+          setShowIncomeModal(false);
+        } else {
+          setShowExpenseModal(false);
+        }
+        
+        // Refresh data
+        await refreshSessionData();
+        await loadRecentTransactions();
+      } else {
+        alert(response.error || 'Error al crear la transacción');
+      }
+    } catch (err) {
+      console.error('Error creating transaction:', err);
+      alert('Error al crear la transacción');
+    }
+  };
+
+  const handleCloseSession = async () => {
+    setCloseError(null);
+    const amount = parseFloat(closingAmount());
+    
+    if (isNaN(amount) || amount < 0) {
+      setCloseError('El monto de cierre debe ser un número válido');
+      return;
+    }
+
+    const session = activeSession();
+    if (!session) return;
+
+    try {
+      const { closeCurrentSession } = await import('@/stores/sessionStore');
+      const result = await closeCurrentSession(amount);
+      
+      if (result.success) {
+        setShowCloseModal(false);
+        navigate('/');
+      } else {
+        setCloseError(result.error || 'Error al cerrar la sesión');
+      }
+    } catch (err) {
+      setCloseError('Error al cerrar la sesión');
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
@@ -67,21 +136,6 @@ const Dashboard: Component = () => {
     } else {
       return date.toLocaleDateString('es-MX');
     }
-  };
-
-  const handleCloseSession = async () => {
-    setCloseError(null);
-    const amount = parseFloat(closingAmount());
-    
-    if (isNaN(amount) || amount < 0) {
-      setCloseError('El monto de cierre debe ser un número válido');
-      return;
-    }
-
-    // Close session logic would go here
-    // For now, just close the modal
-    setShowCloseModal(false);
-    navigate('/');
   };
 
   return (
@@ -156,7 +210,7 @@ const Dashboard: Component = () => {
                 <div class="flex gap-4 mt-4">
                   <Button 
                     class="flex-1 py-4 text-base font-semibold flex items-center justify-center gap-2"
-                    onClick={() => {/* TODO: Open income modal */}}
+                    onClick={() => setShowIncomeModal(true)}
                   >
                     <Plus class="w-5 h-5" />
                     Registrar Ingreso
@@ -164,7 +218,7 @@ const Dashboard: Component = () => {
                   <Button 
                     variant="outline"
                     class="flex-1 py-4 text-base font-semibold flex items-center justify-center gap-2 border-gray-300"
-                    onClick={() => {/* TODO: Open expense modal */}}
+                    onClick={() => setShowExpenseModal(true)}
                   >
                     <Upload class="w-5 h-5" />
                     Registrar Egreso
@@ -240,6 +294,23 @@ const Dashboard: Component = () => {
           )}
         </Show>
       </Show>
+
+      {/* Income Modal */}
+      <TransactionModal
+        isOpen={showIncomeModal()}
+        onClose={() => setShowIncomeModal(false)}
+        onSubmit={(data) => handleCreateTransaction('income', data)}
+        type="income"
+      />
+
+      {/* Expense Modal */}
+      <TransactionModal
+        isOpen={showExpenseModal()}
+        onClose={() => setShowExpenseModal(false)}
+        onSubmit={(data) => handleCreateTransaction('expense', data)}
+        type="expense"
+        currentBalance={sessionSummary()?.current_balance}
+      />
 
       {/* Close Session Modal */}
       <Show when={showCloseModal()}>
