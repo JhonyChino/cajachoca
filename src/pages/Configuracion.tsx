@@ -9,6 +9,7 @@ import {
   getCurrencyName,
   type Currency 
 } from '@/stores/configStore';
+import { open } from '@tauri-apps/plugin-dialog';
 import { DollarSign, FolderOpen, Check, Save } from 'lucide-solid';
 
 const Configuracion: Component = () => {
@@ -31,10 +32,23 @@ const Configuracion: Component = () => {
   };
 
   const handleSelectFolder = async () => {
-    // In a real Tauri app, this would open a folder dialog
-    // For now, we'll just set a default path or allow manual input
-    const defaultPath = config().downloadPath || 'C:/Users/Usuario/Documentos/CafeteriaHub/Reportes';
-    setDownloadPathInput(defaultPath);
+    try {
+      // Open folder picker dialog
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        defaultPath: config().downloadPath || undefined,
+        title: 'Seleccionar carpeta para reportes'
+      });
+      
+      // If user selected a folder, update the input
+      if (selected && typeof selected === 'string') {
+        setDownloadPathInput(selected);
+      }
+    } catch (error) {
+      console.error('Error al abrir diálogo:', error);
+      alert('Error al abrir el selector de carpetas');
+    }
   };
 
   return (
