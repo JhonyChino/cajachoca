@@ -1,25 +1,25 @@
-import { Route } from '@solidjs/router';
+import { Component, lazy } from 'solid-js';
+import { Router, Route } from '@solidjs/router';
 
-function App() {
+// Lazy load pages for better performance
+const StartSession = lazy(() => import('./pages/StartSession'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Caja = lazy(() => import('./pages/Caja'));
+const Historial = lazy(() => import('./pages/Historial'));
+const Reportes = lazy(() => import('./pages/Reportes'));
+const Configuracion = lazy(() => import('./pages/Configuracion'));
+
+const App: Component = () => {
   return (
-    <div class="min-h-screen bg-background text-foreground">
-      <Route path="/" component={() => (
-        <div class="flex items-center justify-center min-h-screen">
-          <div class="text-center">
-            <h1 class="text-4xl font-bold text-primary mb-4">
-              Cafetería Hub
-            </h1>
-            <p class="text-muted-foreground">
-              Sistema de Caja Chica
-            </p>
-            <p class="text-sm text-muted-foreground mt-4">
-              Proyecto inicializado correctamente ✓
-            </p>
-          </div>
-        </div>
-      )} />
-    </div>
+    <Router>
+      <Route path="/" component={StartSession} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/caja" component={Caja} />
+      <Route path="/historial" component={Historial} />
+      <Route path="/reportes" component={Reportes} />
+      <Route path="/configuracion" component={Configuracion} />
+    </Router>
   );
-}
+};
 
 export default App;
