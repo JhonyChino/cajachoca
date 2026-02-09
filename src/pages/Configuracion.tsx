@@ -216,300 +216,306 @@ const Configuracion: Component = () => {
 
   return (
     <AppLayout title="Configuración" subtitle="Personaliza las opciones del sistema">
-      <div class="max-w-4xl space-y-6">
-        {/* Currency Configuration */}
-        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <DollarSign class="w-5 h-5 text-blue-600" />
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column */}
+        <div class="space-y-6">
+          {/* Currency Configuration */}
+          <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <DollarSign class="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900">Moneda</h2>
+                <p class="text-sm text-gray-500">Selecciona la moneda para mostrar los montos</p>
+              </div>
             </div>
-            <div>
-              <h2 class="text-lg font-semibold text-gray-900">Moneda</h2>
-              <p class="text-sm text-gray-500">Selecciona la moneda para mostrar los montos</p>
-            </div>
-          </div>
 
-          <div class="space-y-3">
-            {currencies.map((currency) => (
-              <label
-                class={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                  selectedCurrency() === currency.value
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div class="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="currency"
-                    value={currency.value}
-                    checked={selectedCurrency() === currency.value}
-                    onChange={() => setSelectedCurrency(currency.value)}
-                    class="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                  />
-                  <div>
-                    <p class="font-medium text-gray-900">{currency.label}</p>
-                    <p class="text-sm text-gray-500">Símbolo: {currency.symbol}</p>
+            <div class="space-y-3">
+              {currencies.map((currency) => (
+                <label
+                  class={`flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    selectedCurrency() === currency.value
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="currency"
+                      value={currency.value}
+                      checked={selectedCurrency() === currency.value}
+                      onChange={() => setSelectedCurrency(currency.value)}
+                      class="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div>
+                      <p class="font-medium text-gray-900">{currency.label}</p>
+                      <p class="text-sm text-gray-500">Símbolo: {currency.symbol}</p>
+                    </div>
                   </div>
-                </div>
-                <Show when={selectedCurrency() === currency.value}>
-                  <Check class="w-5 h-5 text-blue-600" />
-                </Show>
-              </label>
-            ))}
+                  <Show when={selectedCurrency() === currency.value}>
+                    <Check class="w-5 h-5 text-blue-600" />
+                  </Show>
+                </label>
+              ))}
+            </div>
+
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+              <p class="text-sm text-gray-500 mb-2">Vista previa:</p>
+              <p class="text-2xl font-bold text-gray-900">
+                {getCurrencySymbol(selectedCurrency())} 1,250.00
+              </p>
+            </div>
           </div>
 
-          <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p class="text-sm text-gray-500 mb-2">Vista previa:</p>
-            <p class="text-2xl font-bold text-gray-900">
-              {getCurrencySymbol(selectedCurrency())} 1,250.00
-            </p>
+          {/* Download Path Configuration */}
+          <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <FolderOpen class="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900">Ruta de Descarga</h2>
+                <p class="text-sm text-gray-500">Carpeta donde se guardarán los reportes generados</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Ruta de descarga de reportes
+                </label>
+                <div class="flex gap-2">
+                  <input
+                    type="text"
+                    value={downloadPathInput()}
+                    onInput={(e) => setDownloadPathInput(e.currentTarget.value)}
+                    placeholder="C:/Users/Usuario/Documentos/CafeteriaHub/Reportes"
+                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={handleSelectFolder}
+                    class="px-4 flex items-center gap-2"
+                  >
+                    <FolderOpen class="w-4 h-4" />
+                    Examinar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div class="flex items-center justify-between bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <Show when={showSaveSuccess()}>
+              <div class="flex items-center gap-2 text-green-600">
+                <Check class="w-5 h-5" />
+                <span class="font-medium">Configuración guardada correctamente</span>
+              </div>
+            </Show>
+            
+            <Button
+              onClick={handleSave}
+              class="flex items-center gap-2 px-8"
+            >
+              <Save class="w-4 h-4" />
+              Guardar Cambios
+            </Button>
+          </div>
+
+          {/* Current Settings Summary */}
+          <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+              Configuración Actual
+            </h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Moneda seleccionada:</span>
+                <span class="font-medium text-gray-900">
+                  {getCurrencyName(config().currency)} ({getCurrencySymbol(config().currency)})
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Ruta de descarga:</span>
+                <span class="font-medium text-gray-900">
+                  {config().downloadPath || 'Predeterminada (Documentos/CafeteriaHub/Reportes)'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Download Path Configuration */}
-        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <FolderOpen class="w-5 h-5 text-green-600" />
+        {/* Right Column */}
+        <div class="space-y-6">
+          {/* Backup & Restore Section */}
+          <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Database class="w-5 h-5 text-purple-600" />
+              </div>
+              <div class="flex-1">
+                <h2 class="text-lg font-semibold text-gray-900">Backup y Restauración</h2>
+                <p class="text-sm text-gray-500">Gestiona los backups de la base de datos</p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={loadBackups}
+                class="px-3 flex items-center gap-2"
+              >
+                <RefreshCw class="w-4 h-4" />
+                Actualizar
+              </Button>
             </div>
-            <div>
-              <h2 class="text-lg font-semibold text-gray-900">Ruta de Descarga</h2>
-              <p class="text-sm text-gray-500">Carpeta donde se guardarán los reportes generados</p>
-            </div>
-          </div>
 
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Ruta de descarga de reportes
-              </label>
+            {/* Database Info */}
+            <Show when={dbInfo()}>
+              <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 class="text-sm font-medium text-blue-900 mb-2">Información de la Base de Datos</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span class="text-blue-600">Tamaño:</span>
+                    <span class="ml-2 font-medium text-blue-900">{dbInfo()?.size_formatted}</span>
+                  </div>
+                  <div>
+                    <span class="text-blue-600">Última modificación:</span>
+                    <span class="ml-2 font-medium text-blue-900">
+                      {dbInfo() && formatDate(dbInfo()!.last_modified)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Show>
+
+            {/* Backup Export Path */}
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h3 class="text-sm font-medium text-gray-900 mb-3">Ruta de Exportación de Backup</h3>
               <div class="flex gap-2">
                 <input
                   type="text"
-                  value={downloadPathInput()}
-                  onInput={(e) => setDownloadPathInput(e.currentTarget.value)}
-                  placeholder="C:/Users/Usuario/Documentos/CafeteriaHub/Reportes"
-                  class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  value={backupExportPath()}
+                  onInput={(e) => setBackupExportPath(e.currentTarget.value)}
+                  placeholder="Usar ruta predeterminada (Documentos/CafeteriaHub/Backups)"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                 />
                 <Button
                   variant="outline"
-                  onClick={handleSelectFolder}
+                  onClick={handleSelectBackupExportPath}
                   class="px-4 flex items-center gap-2"
                 >
                   <FolderOpen class="w-4 h-4" />
                   Examinar
                 </Button>
               </div>
+              <p class="text-xs text-gray-500 mt-2">
+                Selecciona una carpeta personalizada donde se guardará el backup. Si no especificas una ruta, se usará la ubicación predeterminada.
+              </p>
             </div>
-          </div>
-        </div>
 
-        {/* Backup & Restore Section */}
-        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Database class="w-5 h-5 text-purple-600" />
-            </div>
-            <div class="flex-1">
-              <h2 class="text-lg font-semibold text-gray-900">Backup y Restauración</h2>
-              <p class="text-sm text-gray-500">Gestiona los backups de la base de datos</p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={loadBackups}
-              class="px-3 flex items-center gap-2"
-            >
-              <RefreshCw class="w-4 h-4" />
-              Actualizar
-            </Button>
-          </div>
-
-          {/* Database Info */}
-          <Show when={dbInfo()}>
-            <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 class="text-sm font-medium text-blue-900 mb-2">Información de la Base de Datos</h3>
-              <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span class="text-blue-600">Tamaño:</span>
-                  <span class="ml-2 font-medium text-blue-900">{dbInfo()?.size_formatted}</span>
-                </div>
-                <div>
-                  <span class="text-blue-600">Última modificación:</span>
-                  <span class="ml-2 font-medium text-blue-900">
-                    {dbInfo() && formatDate(dbInfo()!.last_modified)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Show>
-
-          {/* Backup Export Path */}
-          <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 class="text-sm font-medium text-gray-900 mb-3">Ruta de Exportación de Backup</h3>
-            <div class="flex gap-2">
-              <input
-                type="text"
-                value={backupExportPath()}
-                onInput={(e) => setBackupExportPath(e.currentTarget.value)}
-                placeholder="Usar ruta predeterminada (Documentos/CafeteriaHub/Backups)"
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
-              />
+            {/* Action Buttons */}
+            <div class="flex gap-4 mb-6">
+              <Button
+                onClick={handleCreateBackup}
+                disabled={isCreatingBackup()}
+                class="flex items-center gap-2"
+              >
+                <Download class="w-4 h-4" />
+                {isCreatingBackup() ? 'Creando...' : 'Crear Backup'}
+              </Button>
               <Button
                 variant="outline"
-                onClick={handleSelectBackupExportPath}
-                class="px-4 flex items-center gap-2"
+                onClick={handleImportBackup}
+                disabled={isRestoring()}
+                class="flex items-center gap-2"
               >
-                <FolderOpen class="w-4 h-4" />
-                Examinar
+                <Upload class="w-4 h-4" />
+                Importar Backup
               </Button>
             </div>
-            <p class="text-xs text-gray-500 mt-2">
-              Selecciona una carpeta personalizada donde se guardará el backup. Si no especificas una ruta, se usará la ubicación predeterminada.
-            </p>
-          </div>
 
-          {/* Action Buttons */}
-          <div class="flex gap-4 mb-6">
-            <Button
-              onClick={handleCreateBackup}
-              disabled={isCreatingBackup()}
-              class="flex items-center gap-2"
-            >
-              <Download class="w-4 h-4" />
-              {isCreatingBackup() ? 'Creando...' : 'Crear Backup'}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleImportBackup}
-              disabled={isRestoring()}
-              class="flex items-center gap-2"
-            >
-              <Upload class="w-4 h-4" />
-              Importar Backup
-            </Button>
-          </div>
-
-          {/* Backups List */}
-          <div class="border border-gray-200 rounded-lg overflow-hidden">
-            <h3 class="px-4 py-3 bg-gray-50 text-sm font-semibold text-gray-700 border-b border-gray-200">
-              Backups Disponibles ({backups().length})
-            </h3>
-            
-            <Show when={backups().length > 0} fallback={
-              <div class="px-4 py-8 text-center text-gray-500">
-                <Database class="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p>No hay backups disponibles</p>
-                <p class="text-sm">Crea tu primer backup usando el botón "Crear Backup"</p>
-              </div>
-            }>
-              <div class="divide-y divide-gray-200">
-                <For each={backups()}>
-                  {(backup) => (
-                    <div class="px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                      <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900 truncate">{backup.filename}</p>
-                        <p class="text-xs text-gray-500">
-                          {formatDate(backup.created_at)} • {backup.size_formatted}
-                        </p>
+            {/* Backups List */}
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <h3 class="px-4 py-3 bg-gray-50 text-sm font-semibold text-gray-700 border-b border-gray-200">
+                Backups Disponibles ({backups().length})
+              </h3>
+              
+              <Show when={backups().length > 0} fallback={
+                <div class="px-4 py-8 text-center text-gray-500">
+                  <Database class="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>No hay backups disponibles</p>
+                  <p class="text-sm">Crea tu primer backup usando el botón "Crear Backup"</p>
+                </div>
+              }>
+                <div class="divide-y divide-gray-200">
+                  <For each={backups()}>
+                    {(backup) => (
+                      <div class="px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-medium text-gray-900 truncate">{backup.filename}</p>
+                          <p class="text-xs text-gray-500">
+                            {formatDate(backup.created_at)} • {backup.size_formatted}
+                          </p>
+                        </div>
+                        <div class="flex items-center gap-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowRestoreConfirm(backup.filepath)}
+                            disabled={isRestoring()}
+                            class="flex items-center gap-1"
+                          >
+                            <Upload class="w-3 h-3" />
+                            Restaurar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteBackup(backup.filepath)}
+                            class="flex items-center gap-1 text-red-600 hover:bg-red-50 hover:border-red-300"
+                          >
+                            <Trash2 class="w-3 h-3" />
+                          </Button>
+                        </div>
                       </div>
-                      <div class="flex items-center gap-2 ml-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowRestoreConfirm(backup.filepath)}
-                          disabled={isRestoring()}
-                          class="flex items-center gap-1"
-                        >
-                          <Upload class="w-3 h-3" />
-                          Restaurar
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteBackup(backup.filepath)}
-                          class="flex items-center gap-1 text-red-600 hover:bg-red-50 hover:border-red-300"
-                        >
-                          <Trash2 class="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </For>
-              </div>
-            </Show>
-          </div>
-        </div>
-
-        {/* Danger Zone - Delete All Records */}
-        <div class="bg-red-50 p-6 rounded-xl border border-red-200 shadow-sm">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-              <Skull class="w-5 h-5 text-red-600" />
-            </div>
-            <div class="flex-1">
-              <h2 class="text-lg font-semibold text-red-900">Zona de Peligro</h2>
-              <p class="text-sm text-red-600">Acciones destructivas que no se pueden deshacer</p>
+                    )}
+                  </For>
+                </div>
+              </Show>
             </div>
           </div>
 
-          <div class="p-4 bg-white rounded-lg border border-red-200">
-            <div class="flex items-start gap-4">
-              <AlertTriangle class="w-6 h-6 text-red-500 flex-shrink-0 mt-1" />
+          {/* Danger Zone - Delete All Records */}
+          <div class="bg-red-50 p-6 rounded-xl border border-red-200 shadow-sm">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <Skull class="w-5 h-5 text-red-600" />
+              </div>
               <div class="flex-1">
-                <h3 class="text-sm font-semibold text-gray-900 mb-1">Eliminar Todos los Registros</h3>
-                <p class="text-sm text-gray-600 mb-4">
-                  Esta acción eliminará permanentemente todas las transacciones, sesiones y datos de la base de datos. 
-                  Se recomienda crear un backup antes de continuar.
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteAllConfirm(true)}
-                  class="text-red-600 border-red-300 hover:bg-red-50 flex items-center gap-2"
-                >
-                  <Trash2 class="w-4 h-4" />
-                  Eliminar Todos los Registros
-                </Button>
+                <h2 class="text-lg font-semibold text-red-900">Zona de Peligro</h2>
+                <p class="text-sm text-red-600">Acciones destructivas que no se pueden deshacer</p>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Save Button */}
-        <div class="flex items-center justify-between">
-          <Show when={showSaveSuccess()}>
-            <div class="flex items-center gap-2 text-green-600">
-              <Check class="w-5 h-5" />
-              <span class="font-medium">Configuración guardada correctamente</span>
-            </div>
-          </Show>
-          
-          <Button
-            onClick={handleSave}
-            class="flex items-center gap-2 px-8"
-          >
-            <Save class="w-4 h-4" />
-            Guardar Cambios
-          </Button>
-        </div>
-
-        {/* Current Settings Summary */}
-        <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
-          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-            Configuración Actual
-          </h3>
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-              <span class="text-gray-600">Moneda seleccionada:</span>
-              <span class="font-medium text-gray-900">
-                {getCurrencyName(config().currency)} ({getCurrencySymbol(config().currency)})
-              </span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-gray-600">Ruta de descarga:</span>
-              <span class="font-medium text-gray-900">
-                {config().downloadPath || 'Predeterminada (Documentos/CafeteriaHub/Reportes)'}
-              </span>
+            <div class="p-4 bg-white rounded-lg border border-red-200">
+              <div class="flex items-start gap-4">
+                <AlertTriangle class="w-6 h-6 text-red-500 flex-shrink-0 mt-1" />
+                <div class="flex-1">
+                  <h3 class="text-sm font-semibold text-gray-900 mb-1">Eliminar Todos los Registros</h3>
+                  <p class="text-sm text-gray-600 mb-4">
+                    Esta acción eliminará permanentemente todas las transacciones, sesiones y datos de la base de datos. 
+                    Se recomienda crear un backup antes de continuar.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteAllConfirm(true)}
+                    class="text-red-600 border-red-300 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <Trash2 class="w-4 h-4" />
+                    Eliminar Todos los Registros
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
