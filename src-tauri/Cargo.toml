@@ -3,7 +3,7 @@ name = "cajachoca"
 version = "0.1.0"
 description = "Sistema de Caja Chica para unidades educativas"
 authors = ["Jhonny Ecl"]
-edition = "2026"
+edition = "2024"
 
 [lib]
 name = "cajachoca_lib"
