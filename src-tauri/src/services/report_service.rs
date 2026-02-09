@@ -72,60 +72,135 @@ impl ReportService {
             .map_err(|_| "Error al obtener conexión".to_string())?;
 
         // Build query based on report type
-        let query = match report_type {
-            "income" => {
-                "SELECT 
-                t.id, t.session_id, t.transaction_number, t.type, t.amount, 
-                t.concept, t.category_id, c.name as category_name, t.created_at, t.created_by
-             FROM transactions t
-             LEFT JOIN categories c ON t.category_id = c.id
-             WHERE date(t.created_at) >= date(?) AND date(t.created_at) <= date(?)
-             AND t.type = 'income'
-             ORDER BY t.created_at DESC"
+        let query = if report_type.starts_with("category_") {
+            // Category-based report
+            let parts: Vec<&str> = report_type.split('_').collect();
+            if parts.len() >= 3 {
+                let category_id: i64 = parts[1].parse().unwrap_or(0);
+                let transaction_type = parts[2];
+
+                if transaction_type == "income" {
+                    format!(
+                        "SELECT 
+                    t.id, t.session_id, t.transaction_number, t.type, t.amount, 
+                    t.concept, t.category_id, c.name as category_name, t.created_at, t.created_by
+                 FROM transactions t
+                 LEFT JOIN categories c ON t.category_id = c.id
+                 WHERE date(t.created_at) >= date('{}') AND date(t.created_at) <= date('{}')
+                 AND t.type = 'income' AND t.category_id = {}
+                 ORDER BY t.created_at DESC",
+                        start_date, end_date, category_id
+                    )
+                } else {
+                    format!(
+                        "SELECT 
+                    t.id, t.session_id, t.transaction_number, t.type, t.amount, 
+                    t.concept, t.category_id, c.name as category_name, t.created_at, t.created_by
+                 FROM transactions t
+                 LEFT JOIN categories c ON t.category_id = c.id
+                 WHERE date(t.created_at) >= date('{}') AND date(t.created_at) <= date('{}')
+                 AND t.type = 'expense' AND t.category_id = {}
+                 ORDER BY t.created_at DESC",
+                        start_date, end_date, category_id
+                    )
+                }
+            } else {
+                return Err("Tipo de reporte de categoría inválido".to_string());
             }
-            "expense" => {
-                "SELECT 
-                t.id, t.session_id, t.transaction_number, t.type, t.amount, 
-                t.concept, t.category_id, c.name as category_name, t.created_at, t.created_by
-             FROM transactions t
-             LEFT JOIN categories c ON t.category_id = c.id
-             WHERE date(t.created_at) >= date(?) AND date(t.created_at) <= date(?)
-             AND t.type = 'expense'
-             ORDER BY t.created_at DESC"
-            }
-            _ => {
-                "SELECT 
-                t.id, t.session_id, t.transaction_number, t.type, t.amount, 
-                t.concept, t.category_id, c.name as category_name, t.created_at, t.created_by
-             FROM transactions t
-             LEFT JOIN categories c ON t.category_id = c.id
-             WHERE date(t.created_at) >= date(?) AND date(t.created_at) <= date(?)
-             ORDER BY t.created_at DESC"
+        } else {
+            match report_type {
+                "income" => "SELECT 
+                    t.id, t.session_id, t.transaction_number, t.type, t.amount, 
+                    t.concept, t.category_id, c.name as category_name, t.created_at, t.created_by
+                 FROM transactions t
+                 LEFT JOIN categories c ON t.category_id = c.id
+                 WHERE date(t.created_at) >= date(?) AND date(t.created_at) <= date(?)
+                 AND t.type = 'income'
+                 ORDER BY t.created_at DESC"
+                    .to_string(),
+                "expense" => "SELECT 
+                    t.id, t.session_id, t.transaction_number, t.type, t.amount, 
+                    t.concept, t.category_id, c.name as category_name, t.created_at, t.created_by
+                 FROM transactions t
+                 LEFT JOIN categories c ON t.category_id = c.id
+                 WHERE date(t.created_at) >= date(?) AND date(t.created_at) <= date(?)
+                 AND t.type = 'expense'
+                 ORDER BY t.created_at DESC"
+                    .to_string(),
+                _ => "SELECT 
+                    t.id, t.session_id, t.transaction_number, t.type, t.amount, 
+                    t.concept, t.category_id, c.name as category_name, t.created_at, t.created_by
+                 FROM transactions t
+                 LEFT JOIN categories c ON t.category_id = c.id
+                 WHERE date(t.created_at) >= date(?) AND date(t.created_at) <= date(?)
+                 ORDER BY t.created_at DESC"
+                    .to_string(),
             }
         };
 
-        let mut stmt = conn
-            .prepare(query)
-            .map_err(|e| format!("Error en query: {}", e))?;
+        let transactions = if report_type.starts_with("category_") {
+            // For category reports, query is already a formatted String
+            let results: Result<Vec<Transaction>, String> = {
+                let mut stmt = conn
+                    .prepare(&query)
+                    .map_err(|e| format!("Error en query: {}", e))?;
 
-        let transactions = stmt
-            .query_map([start_date, end_date], |row| {
-                Ok(Transaction {
-                    id: row.get(0)?,
-                    session_id: row.get(1)?,
-                    transaction_number: row.get(2)?,
-                    transaction_type: row.get(3)?,
-                    amount: row.get(4)?,
-                    concept: row.get(5)?,
-                    category_id: row.get(6)?,
-                    category_name: row.get(7)?,
-                    created_at: row.get(8)?,
-                    created_by: row.get(9)?,
-                })
-            })
-            .map_err(|e| format!("Error mapeando resultados: {}", e))?
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| format!("Error colectando transacciones: {}", e))?;
+                let mapped = stmt
+                    .query_map([], |row| {
+                        Ok(Transaction {
+                            id: row.get(0)?,
+                            session_id: row.get(1)?,
+                            transaction_number: row.get(2)?,
+                            transaction_type: row.get(3)?,
+                            amount: row.get(4)?,
+                            concept: row.get(5)?,
+                            category_id: row.get(6)?,
+                            category_name: row.get(7)?,
+                            created_at: row.get(8)?,
+                            created_by: row.get(9)?,
+                        })
+                    })
+                    .map_err(|e| format!("Error mapeando resultados: {}", e))?;
+
+                let collected = mapped
+                    .collect::<Result<Vec<_>, _>>()
+                    .map_err(|e| format!("Error colectando transacciones: {}", e))?;
+
+                Ok(collected)
+            };
+            results?
+        } else {
+            // For regular reports, use parameters
+            let results: Result<Vec<Transaction>, String> = {
+                let mut stmt = conn
+                    .prepare(&query)
+                    .map_err(|e| format!("Error en query: {}", e))?;
+
+                let mapped = stmt
+                    .query_map([start_date, end_date], |row| {
+                        Ok(Transaction {
+                            id: row.get(0)?,
+                            session_id: row.get(1)?,
+                            transaction_number: row.get(2)?,
+                            transaction_type: row.get(3)?,
+                            amount: row.get(4)?,
+                            concept: row.get(5)?,
+                            category_id: row.get(6)?,
+                            category_name: row.get(7)?,
+                            created_at: row.get(8)?,
+                            created_by: row.get(9)?,
+                        })
+                    })
+                    .map_err(|e| format!("Error mapeando resultados: {}", e))?;
+
+                let collected = mapped
+                    .collect::<Result<Vec<_>, _>>()
+                    .map_err(|e| format!("Error colectando transacciones: {}", e))?;
+
+                Ok(collected)
+            };
+            results?
+        };
 
         Ok(transactions)
     }
