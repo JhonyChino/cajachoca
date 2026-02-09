@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Cafetería Hub",
+  "productName": "Caja choca",
   "version": "0.1.0",
   "identifier": "com.cafeteria.hub.cajachoca",
   "build": {
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Cafetería Hub - Caja Chica",
+        "title": "Caja choca",
         "width": 1280,
         "height": 800,
         "minWidth": 1024,

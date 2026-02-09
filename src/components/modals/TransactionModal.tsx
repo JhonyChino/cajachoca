@@ -1,7 +1,8 @@
 import { Component, createSignal, createEffect, Show, For } from 'solid-js';
-import { X, DollarSign, AlertCircle } from 'lucide-solid';
+import { X, AlertCircle } from 'lucide-solid';
 import { Button } from '@/components/ui';
 import { categoryApi, type Category } from '@/lib/api';
+import { getCurrencySymbol, config } from '@/stores/configStore';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -66,7 +67,8 @@ const TransactionModal: Component<TransactionModalProps> = (props) => {
     // For expenses, check balance
     if (props.type === 'expense' && props.currentBalance !== undefined) {
       if (amountValue > props.currentBalance) {
-        setError(`Saldo insuficiente. Balance actual: $${props.currentBalance.toFixed(2)}`);
+        const symbol = getCurrencySymbol(config().currency);
+        setError(`Saldo insuficiente. Balance actual: ${symbol}${props.currentBalance.toFixed(2)}`);
         return;
       }
     }
@@ -130,10 +132,12 @@ const TransactionModal: Component<TransactionModalProps> = (props) => {
               {/* Amount */}
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Monto
+                  Monto ({getCurrencySymbol(config().currency)})
                 </label>
                 <div class="relative">
-                  <DollarSign class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 font-semibold">
+                    {getCurrencySymbol(config().currency)}
+                  </span>
                   <input
                     type="number"
                     step="0.01"
