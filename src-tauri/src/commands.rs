@@ -600,7 +600,7 @@ pub fn delete_all_records() -> Result<serde_json::Value, String> {
     // Get database path
     let db_path = dirs::data_dir()
         .ok_or_else(|| "No se pudo obtener directorio de datos".to_string())?
-        .join("CafeteriaHub")
+        .join("CajaChoca")
         .join("cajachoca.db");
 
     if !db_path.exists() {
@@ -612,7 +612,7 @@ pub fn delete_all_records() -> Result<serde_json::Value, String> {
     let backup_filename = format!("cajachoca_backup_before_delete_{}.db", timestamp);
     let backup_dir = dirs::document_dir()
         .ok_or_else(|| "No se pudo obtener directorio de documentos".to_string())?
-        .join("CafeteriaHub")
+        .join("CajaChoca")
         .join("Backups");
 
     std::fs::create_dir_all(&backup_dir)
@@ -657,5 +657,5 @@ pub fn delete_all_records() -> Result<serde_json::Value, String> {
 
 #[tauri::command]
 pub fn greet(name: &str) -> String {
-    format!("¡Hola, {}! Bienvenido a Cafetería Hub", name)
+    format!("¡Hola, {}! Bienvenido a Caja Choca", name)
 }

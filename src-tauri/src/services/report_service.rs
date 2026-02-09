@@ -210,7 +210,7 @@ impl ReportService {
             .or_else(|| dirs::home_dir().map(|h| h.join("Documents")))
             .ok_or("No se pudo encontrar directorio de documentos")?;
 
-        Ok(docs_dir.join("CafeteriaHub").join("Reportes"))
+        Ok(docs_dir.join("CajaChoca").join("Reportes"))
     }
 
     fn generate_pdf_report(
@@ -243,7 +243,7 @@ impl ReportService {
 
         // Title
         current_layer.use_text(
-            &format!("CAFETERÍA HUB - {}", Self::get_report_title(report_type)),
+            &format!("CAJA CHOCA - {}", Self::get_report_title(report_type)),
             20.0,
             Mm(20.0),
             Mm(270.0),
@@ -437,7 +437,7 @@ impl ReportService {
 
         // Write title
         worksheet
-            .write_string_with_format(0, 0, "CAFETERÍA HUB", &title_format)
+            .write_string_with_format(0, 0, "CAJA CHOCA", &title_format)
             .map_err(|e| e.to_string())?;
         worksheet
             .write_string(1, 0, Self::get_report_title(report_type))

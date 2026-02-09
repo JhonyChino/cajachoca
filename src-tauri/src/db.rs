@@ -25,7 +25,7 @@ impl Database {
     fn get_db_path() -> Result<PathBuf> {
         let app_data = dirs::data_dir()
             .ok_or_else(|| rusqlite::Error::InvalidPath(PathBuf::from("No data dir")))?
-            .join("CafeteriaHub");
+            .join("CajaChoca");
 
         std::fs::create_dir_all(&app_data)
             .map_err(|e| rusqlite::Error::InvalidPath(PathBuf::from(e.to_string())))?;

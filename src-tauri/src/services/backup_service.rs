@@ -18,7 +18,7 @@ impl BackupService {
     fn get_db_path() -> Result<PathBuf, String> {
         dirs::data_dir()
             .ok_or_else(|| "No se pudo obtener directorio de datos".to_string())
-            .map(|dir| dir.join("CafeteriaHub").join("cajachoca.db"))
+            .map(|dir| dir.join("CajaChoca").join("cajachoca.db"))
     }
 
     /// Create a backup of the database
@@ -41,7 +41,7 @@ impl BackupService {
         } else {
             dirs::document_dir()
                 .ok_or_else(|| "No se pudo obtener directorio de documentos".to_string())?
-                .join("CafeteriaHub")
+                .join("CajaChoca")
                 .join("Backups")
         };
 
@@ -86,7 +86,7 @@ impl BackupService {
         let auto_backup_name = format!("cajachoca_auto_backup_before_restore_{}.db", timestamp);
         let auto_backup_dir = dirs::data_dir()
             .ok_or_else(|| "No se pudo obtener directorio de datos".to_string())?
-            .join("CafeteriaHub")
+            .join("CajaChoca")
             .join("AutoBackups");
 
         fs::create_dir_all(&auto_backup_dir)
@@ -111,7 +111,7 @@ impl BackupService {
         } else {
             dirs::document_dir()
                 .ok_or_else(|| "No se pudo obtener directorio de documentos".to_string())?
-                .join("CafeteriaHub")
+                .join("CajaChoca")
                 .join("Backups")
         };
 
