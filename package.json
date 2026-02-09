@@ -20,6 +20,7 @@
     "lucide-solid": "latest",
     "solid-js": "^1.9.3",
     "tailwind-merge": "^2.6.0",
+    "vite-plugin-tauri": "^4.0.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

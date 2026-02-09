@@ -1,4 +1,4 @@
-import { Component, createSignal, createEffect, For, Show } from 'solid-js';
+import { Component, createSignal, onMount, For, Show } from 'solid-js';
 import { AppLayout } from '@/components/layout';
 import { Button } from '@/components/ui';
 import { invoke } from '@tauri-apps/api/core';
@@ -14,6 +14,7 @@ interface Category {
 const Categorias: Component = () => {
   const [incomeCategories, setIncomeCategories] = createSignal<Category[]>([]);
   const [expenseCategories, setExpenseCategories] = createSignal<Category[]>([]);
+  const [isLoading, setIsLoading] = createSignal(true);
   const [showCreateModal, setShowCreateModal] = createSignal(false);
   const [newCategoryName, setNewCategoryName] = createSignal('');
   const [newCategoryType, setNewCategoryType] = createSignal<'income' | 'expense'>('income');
@@ -23,19 +24,41 @@ const Categorias: Component = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = createSignal(false);
   const [deletingCategory, setDeletingCategory] = createSignal<Category | null>(null);
 
-  createEffect(() => {
-    loadCategories();
+  onMount(async () => {
+    console.log('Categorias: onMount - iniciando carga de categorias');
+    await loadCategories();
+    console.log('Categorias: carga completada');
   });
 
   const loadCategories = async () => {
+    console.log('Categorias: loadCategories iniciado');
+    setIsLoading(true);
     try {
+      console.log('Categorias: invocando get_categories_by_type para income');
       const incomeResponse = await invoke('get_categories_by_type', { categoryType: 'income' }) as { success: boolean; data: Category[] };
-      const expenseResponse = await invoke('get_categories_by_type', { categoryType: 'expense' }) as { success: boolean; data: Category[] };
+      console.log('Categorias: respuesta income:', incomeResponse);
       
-      if (incomeResponse.success) setIncomeCategories(incomeResponse.data);
-      if (expenseResponse.success) setExpenseCategories(expenseResponse.data);
+      console.log('Categorias: invocando get_categories_by_type para expense');
+      const expenseResponse = await invoke('get_categories_by_type', { categoryType: 'expense' }) as { success: boolean; data: Category[] };
+      console.log('Categorias: respuesta expense:', expenseResponse);
+      
+      if (incomeResponse.success) {
+        console.log('Categorias: estableciendo incomeCategories con', incomeResponse.data.length, 'elementos');
+        setIncomeCategories(incomeResponse.data);
+      } else {
+        console.error('Categorias: error al cargar income:', incomeResponse);
+      }
+      
+      if (expenseResponse.success) {
+        console.log('Categorias: estableciendo expenseCategories con', expenseResponse.data.length, 'elementos');
+        setExpenseCategories(expenseResponse.data);
+      } else {
+        console.error('Categorias: error al cargar expense:', expenseResponse);
+      }
     } catch (error) {
-      console.error('Error loading categories:', error);
+      console.error('Categorias: error en loadCategories:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -144,89 +167,99 @@ const Categorias: Component = () => {
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Income Categories */}
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="p-4 border-b border-gray-200 bg-green-50/50">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <ArrowUpCircle class="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <h2 class="text-lg font-semibold text-gray-900">Categorias de Ingresos</h2>
-                  <p class="text-sm text-gray-500">{incomeCategories().length} categorias</p>
-                </div>
-              </div>
+          {/* Loading State */}
+          <Show when={isLoading()}>
+            <div class="col-span-2 bg-white p-8 rounded-xl border border-gray-200 text-center">
+              <div class="animate-spin text-4xl mb-4">⏳</div>
+              <p class="text-gray-500">Cargando categorias...</p>
             </div>
-            <div class="divide-y divide-gray-100">
-              <Show when={incomeCategories().length > 0} fallback={
-                <div class="p-8 text-center text-gray-400">
-                  <Tag class="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p class="text-sm">No hay categorias de ingresos</p>
-                </div>
-              }>
-                <For each={incomeCategories()}>
-                  {(category) => (
-                    <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors group">
-                      <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 rounded-full bg-green-500" />
-                        <span class="font-medium text-gray-900">{category.name}</span>
-                      </div>
-                      <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleEdit(category)} class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
-                          <Edit2 class="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete(category)} class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
-                          <Trash2 class="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </For>
-              </Show>
-            </div>
-          </div>
+          </Show>
 
-          {/* Expense Categories */}
-          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="p-4 border-b border-gray-200 bg-red-50/50">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <ArrowDownCircle class="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <h2 class="text-lg font-semibold text-gray-900">Categorias de Egresos</h2>
-                  <p class="text-sm text-gray-500">{expenseCategories().length} categorias</p>
+          {/* Income Categories */}
+          <Show when={!isLoading()}>
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="p-4 border-b border-gray-200 bg-green-50/50">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <ArrowUpCircle class="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Categorias de Ingresos</h2>
+                    <p class="text-sm text-gray-500">{incomeCategories().length} categorias</p>
+                  </div>
                 </div>
               </div>
+              <div class="divide-y divide-gray-100">
+                <Show when={incomeCategories().length > 0} fallback={
+                  <div class="p-8 text-center text-gray-400">
+                    <Tag class="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p class="text-sm">No hay categorias de ingresos</p>
+                  </div>
+                }>
+                  <For each={incomeCategories()}>
+                    {(category) => (
+                      <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                        <div class="flex items-center gap-3">
+                          <div class="w-2 h-2 rounded-full bg-green-500" />
+                          <span class="font-medium text-gray-900">{category.name}</span>
+                        </div>
+                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleEdit(category)} class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+                            <Edit2 class="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(category)} class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                            <Trash2 class="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </For>
+                </Show>
+              </div>
             </div>
-            <div class="divide-y divide-gray-100">
-              <Show when={expenseCategories().length > 0} fallback={
-                <div class="p-8 text-center text-gray-400">
-                  <Tag class="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p class="text-sm">No hay categorias de egresos</p>
+
+            {/* Expense Categories */}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div class="p-4 border-b border-gray-200 bg-red-50/50">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <ArrowDownCircle class="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Categorias de Egresos</h2>
+                    <p class="text-sm text-gray-500">{expenseCategories().length} categorias</p>
+                  </div>
                 </div>
-              }>
-                <For each={expenseCategories()}>
-                  {(category) => (
-                    <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors group">
-                      <div class="flex items-center gap-3">
-                        <div class="w-2 h-2 rounded-full bg-red-500" />
-                        <span class="font-medium text-gray-900">{category.name}</span>
+              </div>
+              <div class="divide-y divide-gray-100">
+                <Show when={expenseCategories().length > 0} fallback={
+                  <div class="p-8 text-center text-gray-400">
+                    <Tag class="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p class="text-sm">No hay categorias de egresos</p>
+                  </div>
+                }>
+                  <For each={expenseCategories()}>
+                    {(category) => (
+                      <div class="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                        <div class="flex items-center gap-3">
+                          <div class="w-2 h-2 rounded-full bg-red-500" />
+                          <span class="font-medium text-gray-900">{category.name}</span>
+                        </div>
+                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleEdit(category)} class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+                            <Edit2 class="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(category)} class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                            <Trash2 class="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleEdit(category)} class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
-                          <Edit2 class="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete(category)} class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
-                          <Trash2 class="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </For>
-              </Show>
+                    )}
+                  </For>
+                </Show>
+              </div>
             </div>
-          </div>
+          </Show>
         </div>
 
         {/* Info Card */}
