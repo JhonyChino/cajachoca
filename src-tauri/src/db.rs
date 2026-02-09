@@ -136,17 +136,25 @@ impl Database {
 
         if current_version < 1 {
             // Migration 1: Insert default categories
+            // First, delete all existing categories to replace with new defaults
+            conn.execute("DELETE FROM categories", [])?;
+
             let default_categories = [
-                ("Venta Cafetería", "income"),
-                ("Venta Evento Especial", "income"),
-                ("Reposición de Caja", "income"),
-                ("Abono Cliente", "income"),
-                ("Compra de Insumos", "expense"),
-                ("Pago a Proveedores", "expense"),
-                ("Reparación/Mantenimiento", "expense"),
-                ("Servilletas y Vasos", "expense"),
-                ("Gastos Varios", "expense"),
-                ("Retiro de Caja", "expense"),
+                // Ingresos
+                ("Venta de libros", "income"),
+                ("Pago de mensualidades", "income"),
+                ("Ingreso por kiosco", "income"),
+                ("Venta de productos", "income"),
+                ("Ingreso por comedor", "income"),
+                ("Reposicion de fondos", "income"),
+                // Egresos
+                ("Transporte", "expense"),
+                ("Alimentos", "expense"),
+                ("Gastos varios", "expense"),
+                ("Material de oficina", "expense"),
+                ("Repuestos", "expense"),
+                ("Devoluciones", "expense"),
+                ("Salidas en efectivo", "expense"),
             ];
 
             for (name, category_type) in default_categories {
