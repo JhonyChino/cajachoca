@@ -429,6 +429,48 @@ impl Database {
         )
     }
 
+    pub fn create_category(&self, name: &str, category_type: &str) -> Result<Category> {
+        let conn = self.conn.lock().unwrap();
+
+        conn.execute(
+            "INSERT INTO categories (name, type, is_active) VALUES (?1, ?2, 1)",
+            [name, category_type],
+        )?;
+
+        let id = conn.last_insert_rowid();
+
+        Ok(Category {
+            id,
+            name: name.to_string(),
+            category_type: category_type.to_string(),
+            is_active: true,
+        })
+    }
+
+    pub fn update_category(&self, id: i64, name: &str) -> Result<Category> {
+        {
+            let conn = self.conn.lock().unwrap();
+            conn.execute(
+                "UPDATE categories SET name = ?1 WHERE id = ?2",
+                [name, &id.to_string()],
+            )?;
+        } // Release lock here
+
+        self.get_category_by_id(id)
+    }
+
+    pub fn delete_category(&self, id: i64) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+
+        // Soft delete - mark as inactive
+        conn.execute(
+            "UPDATE categories SET is_active = 0 WHERE id = ?1",
+            [&id.to_string()],
+        )?;
+
+        Ok(())
+    }
+
     // Helper functions
     fn row_to_session(&self, row: &Row) -> Result<Session> {
         Ok(Session {

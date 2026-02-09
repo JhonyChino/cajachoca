@@ -179,6 +179,47 @@ impl TransactionService {
         db.get_categories(Some(&category_type))
     }
 
+    /// Create a new category
+    pub fn create_category(db: &Database, name: String, category_type: String) -> Result<Category> {
+        // Validate input
+        if name.trim().is_empty() {
+            return Err(rusqlite::Error::InvalidParameterName(
+                "El nombre de la categoría es requerido".to_string(),
+            ));
+        }
+
+        if category_type != "income" && category_type != "expense" {
+            return Err(rusqlite::Error::InvalidParameterName(
+                "El tipo debe ser 'income' o 'expense'".to_string(),
+            ));
+        }
+
+        db.create_category(&name, &category_type)
+    }
+
+    /// Update a category name
+    pub fn update_category(db: &Database, category_id: i64, name: String) -> Result<Category> {
+        // Validate input
+        if name.trim().is_empty() {
+            return Err(rusqlite::Error::InvalidParameterName(
+                "El nombre de la categoría es requerido".to_string(),
+            ));
+        }
+
+        // Check if category exists
+        let _ = db.get_category_by_id(category_id)?;
+
+        db.update_category(category_id, &name)
+    }
+
+    /// Delete a category (soft delete)
+    pub fn delete_category(db: &Database, category_id: i64) -> Result<()> {
+        // Check if category exists
+        let _ = db.get_category_by_id(category_id)?;
+
+        db.delete_category(category_id)
+    }
+
     /// Get today's transactions summary
     pub fn get_today_transactions_summary(db: &Database) -> Result<TransactionsSummary> {
         let today = chrono::Local::now().format("%Y-%m-%d").to_string();

@@ -156,6 +156,13 @@ pub struct CategoriesListResponse {
 }
 
 #[derive(Debug, Serialize, Clone)]
+pub struct CategoryResponse {
+    pub success: bool,
+    pub data: Option<Category>,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Serialize, Clone)]
 pub struct DailySummaryResponse {
     pub success: bool,
     pub data: Option<DailySummary>,

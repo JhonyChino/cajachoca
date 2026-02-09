@@ -5,7 +5,8 @@ import {
   History, 
   BarChart3, 
   Settings,
-  Coffee
+  Coffee,
+  Tag
 } from 'lucide-solid';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +20,7 @@ const mainNavItems: NavItem[] = [
   { path: '/dashboard', label: 'Caja', icon: Wallet },
   { path: '/historial', label: 'Historial', icon: History },
   { path: '/reportes', label: 'Reportes', icon: BarChart3 },
+  { path: '/categorias', label: 'Categorias', icon: Tag },
 ];
 
 const bottomNavItems: NavItem[] = [

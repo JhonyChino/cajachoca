@@ -8,6 +8,7 @@ const Caja = lazy(() => import('./pages/Caja'));
 const Historial = lazy(() => import('./pages/Historial'));
 const Reportes = lazy(() => import('./pages/Reportes'));
 const Configuracion = lazy(() => import('./pages/Configuracion'));
+const Categorias = lazy(() => import('./pages/Categorias'));
 
 const App: Component = () => {
   return (
@@ -18,6 +19,7 @@ const App: Component = () => {
       <Route path="/historial" component={Historial} />
       <Route path="/reportes" component={Reportes} />
       <Route path="/configuracion" component={Configuracion} />
+      <Route path="/categorias" component={Categorias} />
     </Router>
   );
 };

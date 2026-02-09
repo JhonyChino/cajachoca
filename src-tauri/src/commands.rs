@@ -253,6 +253,66 @@ pub fn get_categories_by_type(
 }
 
 #[tauri::command]
+pub fn create_category(
+    name: String,
+    category_type: String,
+    db: State<Database>,
+) -> Result<CategoryResponse, String> {
+    match TransactionService::create_category(&db, name, category_type) {
+        Ok(category) => Ok(CategoryResponse {
+            success: true,
+            data: Some(category),
+            error: None,
+        }),
+        Err(e) => Ok(CategoryResponse {
+            success: false,
+            data: None,
+            error: Some(format!("Error al crear categoría: {}", e)),
+        }),
+    }
+}
+
+#[tauri::command]
+pub fn update_category(
+    category_id: i64,
+    name: String,
+    db: State<Database>,
+) -> Result<CategoryResponse, String> {
+    match TransactionService::update_category(&db, category_id, name) {
+        Ok(category) => Ok(CategoryResponse {
+            success: true,
+            data: Some(category),
+            error: None,
+        }),
+        Err(e) => Ok(CategoryResponse {
+            success: false,
+            data: None,
+            error: Some(format!("Error al actualizar categoría: {}", e)),
+        }),
+    }
+}
+
+#[tauri::command]
+pub fn delete_category(category_id: i64, db: State<Database>) -> Result<serde_json::Value, String> {
+    match TransactionService::delete_category(&db, category_id) {
+        Ok(_) => {
+            let response = serde_json::json!({
+                "success": true,
+                "error": null
+            });
+            Ok(response)
+        }
+        Err(e) => {
+            let response = serde_json::json!({
+                "success": false,
+                "error": format!("Error al eliminar categoría: {}", e)
+            });
+            Ok(response)
+        }
+    }
+}
+
+#[tauri::command]
 pub fn get_today_transactions_summary(db: State<Database>) -> Result<serde_json::Value, String> {
     match TransactionService::get_today_transactions_summary(&db) {
         Ok(summary) => {
