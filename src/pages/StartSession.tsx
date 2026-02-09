@@ -56,7 +56,7 @@ const StartSession: Component = () => {
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <Coffee class="w-8 h-8 text-blue-600" />
-            <h1 class="font-bold text-gray-900 text-xl">CAFETERÍA HUB</h1>
+            <h1 class="font-bold text-gray-900 text-xl">Caja Choca</h1>
           </div>
           <button class="flex items-center gap-2 text-gray-600 hover:text-gray-900">
             <span class="text-sm">Ayuda</span>
@@ -167,7 +167,7 @@ const StartSession: Component = () => {
             <div class="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
               <Coffee class="w-8 h-8 text-gray-400" />
             </div>
-            <p>© 2024 Sistema de Cafetería Hub. Todos los derechos reservados.</p>
+            <p>© 2026 Sistema Caja Choca. Todos los derechos reservados.</p>
           </footer>
         </div>
       </main>

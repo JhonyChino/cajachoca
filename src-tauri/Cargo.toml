@@ -1,8 +1,8 @@
 [package]
 name = "cajachoca"
 version = "0.1.0"
-description = "Sistema de Caja Chica para Cafetería"
-authors = ["Cafetería Hub"]
+description = "Sistema de Caja Chica para unidades educativas"
+authors = ["Jhonny Ecl"]
 edition = "2021"
 
 [lib]

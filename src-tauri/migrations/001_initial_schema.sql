@@ -1,4 +1,4 @@
--- Cafetería Hub - Caja Chica Database Schema
+-- CajaChoca - Caja Chica Database Schema
 -- Versión: 1.0.0
 -- Fecha: 2024
 
@@ -67,14 +67,14 @@ CREATE INDEX IF NOT EXISTS idx_categories_type ON categories(type);
 
 -- Datos iniciales: Categorías por defecto
 INSERT OR IGNORE INTO categories (name, type) VALUES 
-    ('Venta Cafetería', 'income'),
-    ('Venta Evento Especial', 'income'),
+    ('Venta Kiosco', 'income'),
+    ('Venta Almuerzo', 'income'),
     ('Reposición de Caja', 'income'),
-    ('Abono Cliente', 'income'),
+    ('Ingreso Mensualidad', 'income'),
     ('Compra de Insumos', 'expense'),
     ('Pago a Proveedores', 'expense'),
     ('Reparación/Mantenimiento', 'expense'),
-    ('Servilletas y Vasos', 'expense'),
+    ('Utileria', 'expense'),
     ('Gastos Varios', 'expense'),
     ('Retiro de Caja', 'expense');
 

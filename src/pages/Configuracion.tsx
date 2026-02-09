@@ -296,7 +296,7 @@ const Configuracion: Component = () => {
                     type="text"
                     value={downloadPathInput()}
                     onInput={(e) => setDownloadPathInput(e.currentTarget.value)}
-                    placeholder="C:/Users/Usuario/Documentos/CafeteriaHub/Reportes"
+                    placeholder="C:/Users/Usuario/Documentos/cajachoca/Reportes"
                     class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                   <Button
@@ -345,7 +345,7 @@ const Configuracion: Component = () => {
               <div class="flex justify-between">
                 <span class="text-gray-600">Ruta de descarga:</span>
                 <span class="font-medium text-gray-900">
-                  {config().downloadPath || 'Predeterminada (Documentos/CafeteriaHub/Reportes)'}
+                  {config().downloadPath || 'Predeterminada (Documentos/cajachoca/Reportes)'}
                 </span>
               </div>
             </div>
@@ -401,7 +401,7 @@ const Configuracion: Component = () => {
                   type="text"
                   value={backupExportPath()}
                   onInput={(e) => setBackupExportPath(e.currentTarget.value)}
-                  placeholder="Usar ruta predeterminada (Documentos/CafeteriaHub/Backups)"
+                  placeholder="Usar ruta predeterminada (Documentos/cajachoca/Backups)"
                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
                 />
                 <Button
