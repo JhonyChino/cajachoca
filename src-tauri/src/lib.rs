@@ -34,6 +34,8 @@ pub fn run() {
             commands::get_categories_by_type,
             commands::get_today_transactions_summary,
             commands::search_transactions,
+            commands::update_transaction,
+            commands::delete_transaction,
             // Report commands
             commands::generate_report,
             // Backup commands

@@ -142,6 +142,26 @@ export const transactionApi = {
 
   async searchTransactions(query: string, limit: number = 50, offset: number = 0): Promise<{ success: boolean; data: Transaction[]; total_count: number; error: string | null }> {
     return invoke('search_transactions', { query, limit, offset });
+  },
+
+  async updateTransaction(
+    transactionId: number,
+    data: {
+      amount: number;
+      concept: string;
+      category_id: number | null;
+    }
+  ): Promise<{ success: boolean; data: Transaction | null; error: string | null }> {
+    return invoke('update_transaction', {
+      transactionId,
+      amount: data.amount,
+      concept: data.concept,
+      categoryId: data.category_id
+    });
+  },
+
+  async deleteTransaction(transactionId: number): Promise<{ success: boolean; error: string | null }> {
+    return invoke('delete_transaction', { transactionId });
   }
 };
 

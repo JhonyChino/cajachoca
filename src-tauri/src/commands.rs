@@ -309,6 +309,56 @@ pub fn search_transactions(
 }
 
 // ============================================
+// Transaction Update and Delete Commands
+// ============================================
+
+#[tauri::command]
+pub fn update_transaction(
+    transaction_id: i64,
+    amount: f64,
+    concept: String,
+    category_id: Option<i64>,
+    db: State<Database>,
+) -> Result<TransactionResponse, String> {
+    match TransactionService::update_transaction(&db, transaction_id, amount, &concept, category_id)
+    {
+        Ok(transaction) => Ok(TransactionResponse {
+            success: true,
+            data: Some(transaction),
+            error: None,
+        }),
+        Err(e) => Ok(TransactionResponse {
+            success: false,
+            data: None,
+            error: Some(format!("Error al actualizar transacción: {}", e)),
+        }),
+    }
+}
+
+#[tauri::command]
+pub fn delete_transaction(
+    transaction_id: i64,
+    db: State<Database>,
+) -> Result<serde_json::Value, String> {
+    match TransactionService::delete_transaction(&db, transaction_id) {
+        Ok(_) => {
+            let response = serde_json::json!({
+                "success": true,
+                "error": null
+            });
+            Ok(response)
+        }
+        Err(e) => {
+            let response = serde_json::json!({
+                "success": false,
+                "error": format!("Error al eliminar transacción: {}", e)
+            });
+            Ok(response)
+        }
+    }
+}
+
+// ============================================
 // Report Commands
 // ============================================
 

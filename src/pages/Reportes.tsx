@@ -6,8 +6,7 @@ import { config } from '@/stores/configStore';
 import { 
   TrendingUp, 
   TrendingDown, 
-  Scale, 
-  BarChart3,
+  Scale,
   ArrowRight,
   FileText,
   Calendar,
@@ -82,14 +81,6 @@ const Reportes: Component = () => {
       iconBgColor: 'bg-blue-100',
       iconColor: 'text-blue-600',
       reportType: 'balance'
-    },
-    {
-      title: 'Resumen Semanal de Comedor',
-      description: 'Análisis de consumos semanales, platos más vendidos y flujo de clientes en el área de cafetería.',
-      icon: BarChart3,
-      iconBgColor: 'bg-amber-100',
-      iconColor: 'text-amber-600',
-      reportType: 'weekly'
     }
   ];
 

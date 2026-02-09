@@ -1,6 +1,7 @@
 use crate::db::Database;
 use crate::models::{Category, CreateTransactionRequest, Transaction};
 use crate::services::session_service::SessionService;
+use chrono;
 use rusqlite::Result;
 
 pub struct TransactionService;
@@ -274,6 +275,74 @@ impl TransactionService {
         )?;
 
         Ok((transactions, total_count))
+    }
+
+    /// Update a transaction
+    pub fn update_transaction(
+        db: &Database,
+        transaction_id: i64,
+        amount: f64,
+        concept: &str,
+        category_id: Option<i64>,
+    ) -> Result<Transaction> {
+        // Validate input
+        if concept.trim().is_empty() {
+            return Err(rusqlite::Error::InvalidParameterName(
+                "El concepto es requerido".to_string(),
+            ));
+        }
+
+        if amount <= 0.0 {
+            return Err(rusqlite::Error::InvalidParameterName(
+                "El monto debe ser mayor a cero".to_string(),
+            ));
+        }
+
+        // Get current transaction to check session and type
+        let current = db.get_transaction_by_id(transaction_id)?;
+
+        // Validate category if provided
+        if let Some(cat_id) = category_id {
+            let category = db.get_category_by_id(cat_id)?;
+            if category.category_type != current.transaction_type {
+                return Err(rusqlite::Error::InvalidParameterName(
+                    "La categoría no coincide con el tipo de transacción".to_string(),
+                ));
+            }
+        }
+
+        // Perform the update
+        let conn = db.get_connection();
+        let conn = conn.lock().map_err(|e| {
+            eprintln!("Error al obtener lock: {:?}", e);
+            rusqlite::Error::InvalidParameterName(
+                "Error de conexión a la base de datos".to_string(),
+            )
+        })?;
+
+        conn.execute(
+            "UPDATE transactions SET amount = ?1, concept = ?2, category_id = ?3 WHERE id = ?4",
+            rusqlite::params![amount, concept, category_id, transaction_id],
+        )?;
+
+        // Return the updated transaction
+        drop(conn);
+        db.get_transaction_by_id(transaction_id)
+    }
+
+    /// Delete a transaction
+    pub fn delete_transaction(db: &Database, transaction_id: i64) -> Result<()> {
+        let conn = db.get_connection();
+        let conn = conn.lock().map_err(|e| {
+            eprintln!("Error al obtener lock: {:?}", e);
+            rusqlite::Error::InvalidParameterName(
+                "Error de conexión a la base de datos".to_string(),
+            )
+        })?;
+
+        conn.execute("DELETE FROM transactions WHERE id = ?1", [transaction_id])?;
+
+        Ok(())
     }
 }
 
