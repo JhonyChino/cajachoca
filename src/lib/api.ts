@@ -174,3 +174,56 @@ export const reportApi = {
     });
   }
 };
+
+// Backup API
+export interface BackupInfo {
+  filename: string;
+  filepath: string;
+  created_at: string;
+  size_bytes: number;
+  size_formatted: string;
+}
+
+export const backupApi = {
+  async createBackup(customPath?: string): Promise<{ 
+    success: boolean; 
+    data: BackupInfo | null; 
+    error: string | null 
+  }> {
+    return invoke('create_backup', { customPath });
+  },
+
+  async restoreBackup(backupPath: string): Promise<{ 
+    success: boolean; 
+    error: string | null 
+  }> {
+    return invoke('restore_backup', { backupPath });
+  },
+
+  async listBackups(backupDir?: string): Promise<{ 
+    success: boolean; 
+    data: BackupInfo[]; 
+    error: string | null 
+  }> {
+    return invoke('list_backups', { backupDir });
+  },
+
+  async deleteBackup(backupPath: string): Promise<{ 
+    success: boolean; 
+    error: string | null 
+  }> {
+    return invoke('delete_backup', { backupPath });
+  },
+
+  async getDatabaseInfo(): Promise<{ 
+    success: boolean; 
+    data: { 
+      size_bytes: number; 
+      size_formatted: string; 
+      last_modified: string;
+    } | null; 
+    error: string | null 
+  }> {
+    return invoke('get_database_info');
+  }
+};

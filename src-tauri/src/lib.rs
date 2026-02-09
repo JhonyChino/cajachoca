@@ -36,6 +36,14 @@ pub fn run() {
             commands::search_transactions,
             // Report commands
             commands::generate_report,
+            // Backup commands
+            commands::create_backup,
+            commands::restore_backup,
+            commands::list_backups,
+            commands::delete_backup,
+            commands::get_database_info,
+            // Database management commands
+            commands::delete_all_records,
             // Test command
             commands::greet,
         ])

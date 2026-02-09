@@ -57,7 +57,7 @@ const Sidebar: Component = () => {
             <Coffee class="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 class="font-bold text-gray-900 text-lg leading-tight">Cafetería Hub</h1>
+            <h1 class="font-bold text-gray-900 text-lg leading-tight">Caja Choca</h1>
             <p class="text-xs text-gray-500">Control de Caja</p>
           </div>
         </div>

@@ -349,6 +349,199 @@ pub fn generate_report(
 }
 
 // ============================================
+// Backup Commands
+// ============================================
+
+#[tauri::command]
+pub fn create_backup(custom_path: Option<String>) -> Result<serde_json::Value, String> {
+    match crate::services::backup_service::BackupService::create_backup(custom_path.as_deref()) {
+        Ok(backup) => {
+            let response = serde_json::json!({
+                "success": true,
+                "data": {
+                    "filename": backup.filename,
+                    "filepath": backup.filepath,
+                    "created_at": backup.created_at,
+                    "size_bytes": backup.size_bytes,
+                    "size_formatted": crate::services::backup_service::format_file_size(backup.size_bytes)
+                },
+                "error": null
+            });
+            Ok(response)
+        }
+        Err(e) => {
+            let response = serde_json::json!({
+                "success": false,
+                "data": null,
+                "error": e
+            });
+            Ok(response)
+        }
+    }
+}
+
+#[tauri::command]
+pub fn restore_backup(backup_path: String) -> Result<serde_json::Value, String> {
+    match crate::services::backup_service::BackupService::restore_backup(&backup_path) {
+        Ok(_) => {
+            let response = serde_json::json!({
+                "success": true,
+                "error": null
+            });
+            Ok(response)
+        }
+        Err(e) => {
+            let response = serde_json::json!({
+                "success": false,
+                "error": e
+            });
+            Ok(response)
+        }
+    }
+}
+
+#[tauri::command]
+pub fn list_backups(backup_dir: Option<String>) -> Result<serde_json::Value, String> {
+    match crate::services::backup_service::BackupService::list_backups(backup_dir.as_deref()) {
+        Ok(backups) => {
+            let backups_json: Vec<serde_json::Value> = backups
+                .into_iter()
+                .map(|b| {
+                    serde_json::json!({
+                        "filename": b.filename,
+                        "filepath": b.filepath,
+                        "created_at": b.created_at,
+                        "size_bytes": b.size_bytes,
+                        "size_formatted": crate::services::backup_service::format_file_size(b.size_bytes)
+                    })
+                })
+                .collect();
+
+            let response = serde_json::json!({
+                "success": true,
+                "data": backups_json,
+                "error": null
+            });
+            Ok(response)
+        }
+        Err(e) => {
+            let response = serde_json::json!({
+                "success": false,
+                "data": [],
+                "error": e
+            });
+            Ok(response)
+        }
+    }
+}
+
+#[tauri::command]
+pub fn delete_backup(backup_path: String) -> Result<serde_json::Value, String> {
+    match crate::services::backup_service::BackupService::delete_backup(&backup_path) {
+        Ok(_) => {
+            let response = serde_json::json!({
+                "success": true,
+                "error": null
+            });
+            Ok(response)
+        }
+        Err(e) => {
+            let response = serde_json::json!({
+                "success": false,
+                "error": e
+            });
+            Ok(response)
+        }
+    }
+}
+
+#[tauri::command]
+pub fn get_database_info() -> Result<serde_json::Value, String> {
+    match crate::services::backup_service::BackupService::get_database_info() {
+        Ok((size, modified)) => {
+            let response = serde_json::json!({
+                "success": true,
+                "data": {
+                    "size_bytes": size,
+                    "size_formatted": crate::services::backup_service::format_file_size(size),
+                    "last_modified": modified
+                },
+                "error": null
+            });
+            Ok(response)
+        }
+        Err(e) => {
+            let response = serde_json::json!({
+                "success": false,
+                "data": null,
+                "error": e
+            });
+            Ok(response)
+        }
+    }
+}
+
+// ============================================
+// Database Management Commands
+// ============================================
+
+#[tauri::command]
+pub fn delete_all_records() -> Result<serde_json::Value, String> {
+    // Get database path
+    let db_path = dirs::data_dir()
+        .ok_or_else(|| "No se pudo obtener directorio de datos".to_string())?
+        .join("CafeteriaHub")
+        .join("cajachoca.db");
+
+    if !db_path.exists() {
+        return Err("No se encontró la base de datos".to_string());
+    }
+
+    // Create a backup before deleting
+    let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
+    let backup_filename = format!("cajachoca_backup_before_delete_{}.db", timestamp);
+    let backup_dir = dirs::document_dir()
+        .ok_or_else(|| "No se pudo obtener directorio de documentos".to_string())?
+        .join("CafeteriaHub")
+        .join("Backups");
+
+    std::fs::create_dir_all(&backup_dir)
+        .map_err(|e| format!("Error creando directorio de backup: {}", e))?;
+
+    let backup_path = backup_dir.join(&backup_filename);
+
+    // Backup current database
+    std::fs::copy(&db_path, &backup_path)
+        .map_err(|e| format!("Error creando backup antes de eliminar: {}", e))?;
+
+    // Connect to database and delete all records
+    let conn = rusqlite::Connection::open(&db_path)
+        .map_err(|e| format!("Error abriendo base de datos: {}", e))?;
+
+    // Delete all records from tables (in correct order to avoid foreign key constraints)
+    conn.execute("DELETE FROM transactions", [])
+        .map_err(|e| format!("Error eliminando transacciones: {}", e))?;
+
+    conn.execute("DELETE FROM sessions", [])
+        .map_err(|e| format!("Error eliminando sesiones: {}", e))?;
+
+    // Reset auto-increment counters
+    conn.execute(
+        "DELETE FROM sqlite_sequence WHERE name IN ('transactions', 'sessions')",
+        [],
+    )
+    .map_err(|e| format!("Error reseteando contadores: {}", e))?;
+
+    let response = serde_json::json!({
+        "success": true,
+        "error": null,
+        "backup_created": backup_path.to_string_lossy().to_string()
+    });
+
+    Ok(response)
+}
+
+// ============================================
 // Test Command
 // ============================================
 
