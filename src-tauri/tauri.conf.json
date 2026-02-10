@@ -41,9 +41,6 @@
       "icons/icon.ico"
     ],
     "windows": {
-      "certificateThumbprint": "",
-      "digestAlgorithm": "sha256",
-      "timestampUrl": "http://timestamp.digicert.com",
       "wix": {
         "language": ["es-ES"]
       }
