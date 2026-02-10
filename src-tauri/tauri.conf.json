@@ -44,11 +44,8 @@
       "certificateThumbprint": "",
       "digestAlgorithm": "sha256",
       "timestampUrl": "http://timestamp.digicert.com",
-      "signCommand": "signtool sign /f \"${certificate}\" /p \"${password}\" /fd sha256 /td sha256 /tr \"${timestamp}\" \"${file}\"",
       "wix": {
-        "language": ["es-ES"],
-        "template": "./wix/template.wxs",
-        "fragment": "./wix/fragment.wxs"
+        "language": ["es-ES"]
       }
     }
   }
