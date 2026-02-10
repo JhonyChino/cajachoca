@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Caja choca",
+  "productName": "Caja Choca",
   "version": "0.1.0",
   "identifier": "com.caja.choca.cajachoca",
   "build": {
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Caja choca",
+        "title": "Caja Choca",
         "width": 1280,
         "height": 800,
         "minWidth": 1024,
@@ -33,24 +33,22 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis"],
+    "targets": "msi",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
-      "icons/icon.icns",
       "icons/icon.ico"
     ],
     "windows": {
-      "certificateThumbprint": null,
+      "certificateThumbprint": "",
       "digestAlgorithm": "sha256",
-      "timestampUrl": "",
+      "timestampUrl": "http://timestamp.digicert.com",
+      "signCommand": "signtool sign /f \"${certificate}\" /p \"${password}\" /fd sha256 /td sha256 /tr \"${timestamp}\" \"${file}\"",
       "wix": {
-        "language": ["es-ES"]
-      },
-      "nsis": {
-        "languages": ["Spanish"],
-        "displayLanguageSelector": false
+        "language": ["es-ES"],
+        "template": "./wix/template.wxs",
+        "fragment": "./wix/fragment.wxs"
       }
     }
   }

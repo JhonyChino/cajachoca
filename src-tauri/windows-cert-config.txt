@@ -1,0 +1,78 @@
+CONFIGURACIÓN DE FIRMA DIGITAL PARA MSI
+========================================
+
+Para firmar digitalmente el instalador MSI de Caja Choca, sigue estos pasos:
+
+OPCIÓN 1: Certificado de Autoridad de Certificación (CA)
+--------------------------------------------------------
+
+1. Obtener un certificado de firma de código:
+   - DigiCert: https://www.digicert.com/code-signing
+   - Comodo/Sectigo: https://sectigo.com/code-signing
+   - SSL.com: https://www.ssl.com/code-signing
+
+2. El certificado debe ser:
+   - Tipo: Code Signing Certificate
+   - Formato: PFX/P12
+   - Algoritmo: SHA-256 o superior
+
+3. Colocar el certificado en:
+   src-tauri/certificates/caja-choca.pfx
+
+4. Configurar tauri.conf.json:
+   "windows": {
+     "certificateThumbprint": "TU_THUMBPRINT_AQUI",
+     "signCommand": "signtool sign /f \"certificates/caja-choca.pfx\" /p \"TU_PASSWORD\" /fd sha256 /td sha256 /tr \"http://timestamp.digicert.com\" \"${file}\""
+   }
+
+OPCIÓN 2: Certificado Auto-firmado (para testing)
+-------------------------------------------------
+
+1. Generar certificado con PowerShell (como Administrador):
+
+```powershell
+# Crear certificado autofirmado
+$cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=Caja Choca, O=Jhonny Ecl" -KeyUsage DigitalSignature -FriendlyName "Caja Choca Code Signing" -CertStoreLocation "Cert:\CurrentUser\My" -NotAfter (Get-Date).AddYears(5)
+
+# Exportar a PFX con contraseña
+$password = ConvertTo-SecureString -String "TuPassword123!" -Force -AsPlainText
+Export-PfxCertificate -Cert $cert -FilePath "C:\cajachoca\certificates\caja-choca.pfx" -Password $password
+
+# Obtener thumbprint
+$cert.Thumbprint
+```
+
+2. Actualizar tauri.conf.json con el thumbprint:
+   "certificateThumbprint": "A1B2C3D4E5F6..."
+
+OPCIÓN 3: Certutil (para obtener thumbprint)
+--------------------------------------------
+
+```powershell
+# Listar certificados
+certutil -store My
+
+# Ver detalles de un certificado específico
+certutil -viewstore My | findstr "Caja Choca"
+```
+
+NOTAS IMPORTANTES:
+------------------
+- El thumbprint NO debe contener espacios
+- El comando signtool viene con Windows SDK
+- Para producción, usar un certificado de CA reconocida
+- Timestamp URL recomendada: http://timestamp.digicert.com
+
+EJEMPLO COMPLETO DE CONFIGURACIÓN:
+-----------------------------------
+"windows": {
+  "certificateThumbprint": "A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6",
+  "digestAlgorithm": "sha256",
+  "timestampUrl": "http://timestamp.digicert.com",
+  "signCommand": "signtool sign /f \"${certificate}\" /p \"${password}\" /fd sha256 /td sha256 /tr \"http://timestamp.digicert.com\" \"${file}\""
+}
+
+AYUDA ADICIONAL:
+----------------
+- Documentación de signtool: https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool
+- Errores comunes de firma: https://learn.microsoft.com/en-us/windows/win32/seccrypto/code-signing-step-by-step

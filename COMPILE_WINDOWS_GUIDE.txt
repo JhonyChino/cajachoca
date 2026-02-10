@@ -1,0 +1,327 @@
+================================================================================
+                     CAJA CHOCA - GUÍA DE COMPILACIÓN PARA WINDOWS 11
+================================================================================
+
+ÍNDICE:
+-------
+1. Requisitos del sistema
+2. Instalación de herramientas
+3. Preparación del proyecto
+4. Compilación del MSI
+5. Firma digital del instalador
+6. Solución de problemas comunes
+7. Distribución del instalador
+
+================================================================================
+1. REQUISITOS DEL SISTEMA
+================================================================================
+
+Hardware mínimo:
+- Procesador: Intel Core i3 o equivalente (recomendado: i5+)
+- RAM: 4 GB (recomendado: 8 GB)
+- Disco: 10 GB libres
+- Sistema: Windows 11 (64-bit)
+
+Hardware recomendado para compilación:
+- RAM: 8 GB+ (la compilación de Rust consume mucha memoria)
+- SSD: Recomendado para velocidad de compilación
+
+================================================================================
+2. INSTALACIÓN DE HERRAMIENTAS
+================================================================================
+
+PASO 2.1: INSTALAR NODE.JS 18+
+------------------------------
+1. Descargar: https://nodejs.org (versión LTS, 18.x o superior)
+2. Ejecutar el instalador (.msi)
+3. Verificar instalación:
+  Abrir PowerShell y ejecutar:
+   > node --version
+   > npm --version
+
+   Debes ver algo como:
+   v18.19.0
+   10.2.1
+
+PASO 2.2: INSTALAR RUST Y CARGO
+--------------------------------
+1. Descargar: https://rustup.rs/
+2. Ejecutar rustup-init.exe
+3. Seleccionar "1) Proceed with installation (default)"
+4. Cerrar y reopen PowerShell
+5. Verificar instalación:
+   > rustc --version
+   > cargo --version
+
+   Debes ver algo como:
+   rustc 1.75.0
+   cargo 1.75.0
+
+PASO 2.3: INSTALAR VISUAL STUDIO BUILD TOOLS
+--------------------------------------------
+1. Descargar: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+2. Ejecutar el instalador
+3. Seleccionar "Desktop development with C++"
+4. En la lista de componentes, asegurar que estén marcados:
+   - MSVC v143 - VS 2022 C++ x64/x86 build tools
+   - Windows 11 SDK (o Windows 10 SDK)
+   - C++ ATL for latest build tools
+5. Clic en "Instalar" (puede tomar 10-20 minutos)
+6. REINICIAR el sistema después de la instalación
+
+VERIFICACIÓN:
+> cl /version
+> echo %WindowsSdkDir%
+
+================================================================================
+3. PREPARACIÓN DEL PROYECTO
+================================================================================
+
+PASO 3.1: COPIAR EL PROYECTO
+-----------------------------
+Opción A: Desde USB
+1. Copiar carpeta cajachoca a C:\
+   C:\cajachoca\
+
+Opción B: Desde Git (si está en un repositorio)
+> cd C:\
+> git clone https://github.com/tu-usuario/cajachoca.git
+
+PASO 3.2: ESTRUCTURA DE CARPETAS
+---------------------------------
+Verifica que tengas esta estructura:
+C:\cajachoca\
+├── src-tauri\
+│   ├── Cargo.toml
+│   ├── tauri.conf.json
+│   ├── icons\
+│   │   ├── 32x32.png
+│   │   ├── 128x128.png
+│   │   ├── 128x128@2x.png
+│   │   └── icon.ico
+│   ├── wix\
+│   │   ├── template.wxs
+│   │   └── fragment.wxs
+│   └── certificates\ (crear si tienes certificado)
+├── src\
+├── dist\ (se creará después del build)
+├── package.json
+├── vite.config.ts
+└── README.md
+
+PASO 3.3: INSTALAR DEPENDENCIAS NPM
+------------------------------------
+> cd C:\cajachoca
+> npm install
+
+Esto instalará:
+- @tauri-apps/cli v2
+- vite v6
+- solid-js v1
+- Y todas las demás dependencias
+
+Tiempo estimado: 5-10 minutos
+
+================================================================================
+4. COMPILACIÓN DEL MSI
+================================================================================
+
+PASO 4.1: PRIMERA COMPILACIÓN (con WiX)
+----------------------------------------
+> cd C:\cajachoca
+> npm run tauri build
+
+Este comando:
+1. Compila el frontend (TypeScript → JavaScript)
+2. Compila el backend (Rust → ejecutable Windows)
+3. Genera el instalador MSI con WiX
+
+Tiempo estimado: 15-30 minutos (primera vez)
+              : 5-10 minutos (compilaciones posteriores)
+
+PASO 4.2: VERIFICACIÓN DE LA COMPILACIÓN
+-----------------------------------------
+El MSI se generará en:
+C:\cajachoca\src-tauri\target\release\bundle\msi\Caja Choca_0.1.0_x64.msi
+
+Tamaño esperado: 50-80 MB
+
+Para verificar:
+> dir C:\cajachoca\src-tauri\target\release\bundle\msi\
+
+PASO 4.3: PRUEBA DEL INSTALADOR
+--------------------------------
+1. Copiar el MSI a otra máquina Windows 11 (o la misma)
+2. Hacer doble clic en "Caja Choca_0.1.0_x64.msi"
+3. Seguir el asistente de instalación
+4. Verificar que aparece en "Programas y características" de Windows
+5. Ejecutar Caja Choca desde el menú Inicio
+
+================================================================================
+5. FIRMA DIGITAL DEL INSTALADOR
+================================================================================
+
+PASO 5.1: OBTENER CERTIFICADO
+------------------------------
+Para firma digital, tienes estas opciones:
+
+Opción A: Certificado comercial (recomendado para producción)
+- DigiCert: https://www.digicert.com/code-signing
+- Sectigo: https://sectigo.com/code-signing
+- precios: $200-400/año
+
+Opción B: Certificado auto-firmado (para testing)
+Ver archivo: src-tauri/windows-cert-config.txt
+
+PASO 5.2: GENERAR CERTIFICADO AUTO-FIRMACDO (OPCIONAL)
+--------------------------------------------------------
+> cd C:\cajachoca\src-tauri
+> mkdir certificates
+
+# PowerShell (como Administrador)
+> $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=Caja Choca, O=Jhonny Ecl" -KeyUsage DigitalSignature -FriendlyName "Caja Choca Code Signing" -CertStoreLocation "Cert:\CurrentUser\My" -NotAfter (Get-Date).AddYears(5)
+> $password = ConvertTo-SecureString -String "CajaChoca2024!" -Force -AsPlainText
+> Export-PfxCertificate -Cert $cert -FilePath "C:\cajachoca\src-tauri\certificates\caja-choca.pfx" -Password $password
+> Write-Host "Thumbprint: " $cert.Thumbprint
+
+Anotar el thumbprint mostrado (ejemplo: A1B2C3D4E5F6...)
+
+PASO 5.3: CONFIGURAR TAURI.CONF.JSON
+-------------------------------------
+Editar: C:\cajachoca\src-tauri\tauri.conf.json
+
+"windows": {
+  "certificateThumbprint": "A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6",
+  "digestAlgorithm": "sha256",
+  "timestampUrl": "http://timestamp.digicert.com",
+  "signCommand": "signtool sign /f \"${certificate}\" /p \"${password}\" /fd sha256 /td sha256 /tr \"http://timestamp.digicert.com\" \"${file}\""
+}
+
+Reemplazar "A1B2C3D4E5F6..." con tu thumbprint real.
+
+PASO 5.4: RE-COMPILAR CON FIRMA
+--------------------------------
+> cd C:\cajachoca
+> npm run tauri build
+
+El MSI ahora estará firmado digitalmente.
+
+PARA VERIFICAR LA FIRMA:
+> signtool verify /pa /v "C:\cajachoca\src-tauri\target\release\bundle\msi\Caja Choca_0.1.0_x64.msi"
+
+================================================================================
+6. SOLUCIÓN DE PROBLEMAS COMUNES
+================================================================================
+
+PROBLEMA 1: "cl no se reconoce como comando interno"
+Solución: Instalar Visual Studio Build Tools y reiniciar el sistema.
+
+PROBLEMA 2: "error: failed to run custom build command"
+Solución: Verificar que Rust está instalado correctamente.
+> rustc --version
+> cargo --version
+
+PROBLEMA 3: "error: could not find cargo component rust-src"
+Solución: Instalar rust-src:
+> rustup component add rust-src
+
+PROBLEMA 4: "npm ERR! code ENOENT"
+Solución: Verificar que package.json existe en C:\cajachoca
+
+PROBLEMA 5: "error MSB4019: no se encuentra el proyecto"
+Solución: Asegurarse de estar en la carpeta correcta del proyecto.
+
+PROBLEMA 6: "WiX toolset not found"
+Solución: El WiX se instala automáticamente con Tauri 2.
+Si persiste, descargar manualmente: https://wixtoolset.org/
+
+PROBLEMA 7: Memoria insuficiente durante compilación
+Solución: Cerrar otras aplicaciones y aumentar archivo de paginación.
+
+PROBLEMA 8: Error de permisos
+Solución: Ejecutar PowerShell como Administrador.
+
+PROBLEMA 9: "The Windows SDK for desktop C++ apps is not installed"
+Solución: Reinstalar Visual Studio Build Tools con SDK incluido.
+
+PROBLEMA 10: Error en firma digital
+Solución: Verificar que signtool está disponible y el certificado es válido.
+> where signtool
+> signtool verify /pa "archivo.msi"
+
+================================================================================
+7. DISTRIBUCIÓN DEL INSTALADOR
+================================================================================
+
+ARCHIVOS A DISTRIBUIR:
+----------------------
+Solo necesitas UN archivo:
+- Caja Choca_0.1.0_x64.msi (50-80 MB)
+
+OPCIONES DE DISTRIBUCIÓN:
+-------------------------
+1. USB/CD/DVD
+2. Correo electrónico (límite ~25MB, usar WeTransfer si es mayor)
+3. Google Drive / OneDrive / Dropbox
+4. Servidor web (descarga directa)
+5. GPO de Active Directory (para empresas)
+
+INSTALACIÓN SILENCIOSA (para IT):
+----------------------------------
+Para instalación sin intervención del usuario:
+
+> msiexec /i "Caja Choca_0.1.0_x64.msi" /quiet
+
+Opciones adicionales:
+/quiet        = Instalación silenciosa
+/passive      = Mostrar progreso sin interacción
+/log C:\install.log = Guardar log de instalación
+INSTALLDIR="C:\MiCarpeta\" = Carpeta de instalación personalizada
+
+DESINSTALACIÓN:
+---------------
+Panel de Control > Programas > Programas y características
+O línea de comandos:
+> msiexec /x "{PRODUCT-GUID}"
+
+Para obtener el GUID:
+> wmic product where "Name='Caja Choca'" get IdentifyingNumber
+
+================================================================================
+INFORMACIÓN DEL PROYECTO
+================================================================================
+
+Nombre: Caja Choca
+Versión: 0.1.0
+Descripción: Sistema de Caja Chica para unidades educativas
+Desarrollador: Jhonny Ecl
+Correo: jhony.ecl@gmail.com
+Repositorio: https://github.com/anomalyco/cajachoca
+
+TECNOLOGÍAS:
+- Frontend: SolidJS + TypeScript + Tailwind CSS
+- Backend: Rust + Tauri 2
+- Base de datos: SQLite
+- Plataforma: Windows 11 (64-bit)
+
+CARACTERÍSTICAS:
+- Gestión de sesiones de caja
+- Registro de ingresos y gastos
+- Reportes en PDF y Excel
+- Respaldo de datos
+- Categorías personalizables
+- Tour guiado de usuario
+
+================================================================================
+NOTAS FINALES
+================================================================================
+
+1. Esta guía está actualizada para Tauri v2
+2. El MSI generado es compatible con Windows 10 y 11
+3. Para actualizaciones futuras, simplemente recompilar con la nueva versión
+4. Mantener respaldos de los archivos del proyecto
+5. El certificado digital es opcional pero recomendado
+
+================================================================================
+                            FIN DEL DOCUMENTO
+================================================================================
