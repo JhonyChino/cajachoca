@@ -12,7 +12,7 @@ Las pequeñas empresas enfrentan dificultades para:
 
 - **Controlar el efectivo diario** - Sin un registro formal, el dinero se mezcla y se pierde el control
 - **Identificar gastos innecesarios** - No se sabe en qué se está gastando el dinero
-- **Generar reportes** -耗时 para calcular balances manualmente
+- **Generar reportes** - Para calcular balances manualmente
 - **Mantener historial** - Se pierde el registro histórico de transacciones
 - **Justificar el uso del dinero** - Sin comprobantes ni categorías claras
 
